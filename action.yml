@@ -1,0 +1,39 @@
+# action.yml
+name: 'Generate Terraform statistics'
+description: 'Output Terraform stats for drift and pending changes'
+branding:
+  icon: 'bar-chart'  
+  color: 'purple'
+inputs:
+  terraform-directory:
+    description: Terraform commands will run in this location.
+    required: true
+    default: "./terraform"
+  include-no-op:
+    description: "\"no-op\" refers to the before and after Terraform changes are identical as a value will only be known after apply."
+    required: true
+    default: false
+outputs:
+  terraform-version:
+    description: 'Terraform version'
+    value: ${{ steps.local-action.outputs.terraform-version }}
+  drift-count:
+    description: 'Count of drifts'
+    value: ${{ steps.local-action.outputs.drift-count }}
+  resource-drifts:
+    description: 'JSON output of resource drifts'
+    value: ${{ steps.local-action.outputs.resource-drifts }}
+  change-count:
+    description: 'Count of changes'
+    value: ${{ steps.local-action.outputs.change-count }}
+  resource-changes:
+    description: 'JSON output of resource changes'
+    value: ${{ steps.local-action.outputs.resource-changes }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run Terraform stats
+      id: local-action
+      run: ./lib/tf_stats.sh "${{ inputs.terraform-directory }}" ${{ inputs.include-no-op }}
+      shell: bash
