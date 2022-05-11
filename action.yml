@@ -35,5 +35,5 @@ runs:
   steps:
     - name: Run Terraform stats
       id: local-action
-      run: ./lib/tf_stats.sh "${{ inputs.terraform-directory }}" ${{ inputs.include-no-op }}
+      run: ${{ github.action_path }}/lib/tf_stats.sh "${{ inputs.terraform-directory }}" ${{ inputs.include-no-op }}
       shell: bash
