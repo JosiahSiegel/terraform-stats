@@ -25,6 +25,10 @@ inputs:
     description: "no-op" refers to the before and after Terraform changes are identical as a value will only be known after apply.
     required: true
     default: false
+  add-args:
+    description: "Pass additional arguments to Terraform plan."
+    required: true
+    default: ""
 ```
 
 ## Outputs

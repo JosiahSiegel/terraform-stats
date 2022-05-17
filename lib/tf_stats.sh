@@ -6,15 +6,16 @@ tf_dir=$1
 #after values are identical. The "after" value will be incomplete if there
 #are values within it that won't be known until after apply.
 include_no_op=$2
+add_args=$3
 plan_file=tf__stats__plan.txt
 
-terraform -chdir=$tf_dir plan -input=false -no-color -lock-timeout=120s -out=$plan_file #&>/dev/null
+terraform -chdir=$tf_dir plan $3 -input=false -no-color -lock-timeout=120s -out=$plan_file #&>/dev/null
 if [[ $? -ne 0 ]]; then
   terraform -chdir=$tf_dir init #>/dev/null
   if [[ $? -ne 0 ]]; then
     exit 1
   fi
-  terraform -chdir=$tf_dir plan -input=false -no-color -lock-timeout=120s -out=$plan_file #&>/dev/null
+  terraform -chdir=$tf_dir plan $3 -input=false -no-color -lock-timeout=120s -out=$plan_file #&>/dev/null
 fi
 
 PLAN_TXT=$( terraform -chdir=$tf_dir show -no-color $plan_file )

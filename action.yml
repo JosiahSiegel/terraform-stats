@@ -13,6 +13,10 @@ inputs:
     description: "\"no-op\" refers to the before and after Terraform changes are identical as a value will only be known after apply."
     required: true
     default: false
+  add-args:
+    description: "Pass additional arguments to Terraform plan."
+    required: true
+    default: ""
 outputs:
   terraform-version:
     description: 'Terraform version'
@@ -35,5 +39,5 @@ runs:
   steps:
     - name: Run Terraform stats
       id: local-action
-      run: ${{ github.action_path }}/lib/tf_stats.sh "${{ inputs.terraform-directory }}" ${{ inputs.include-no-op }}
+      run: ${{ github.action_path }}/lib/tf_stats.sh "${{ inputs.terraform-directory }}" ${{ inputs.include-no-op }} "${{ inputs.add-args }}"
       shell: bash
