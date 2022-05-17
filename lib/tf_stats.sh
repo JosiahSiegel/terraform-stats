@@ -8,13 +8,13 @@ tf_dir=$1
 include_no_op=$2
 plan_file=tf__stats__plan.txt
 
-terraform -chdir=$tf_dir plan -input=false -no-color -lock-timeout=120s -out=$plan_file &>/dev/null
+terraform -chdir=$tf_dir plan -input=false -no-color -lock-timeout=120s -out=$plan_file #&>/dev/null
 if [[ $? -ne 0 ]]; then
-  terraform -chdir=$tf_dir init >/dev/null
+  terraform -chdir=$tf_dir init #>/dev/null
   if [[ $? -ne 0 ]]; then
     exit 1
   fi
-  terraform -chdir=$tf_dir plan -input=false -no-color -lock-timeout=120s -out=$plan_file &>/dev/null
+  terraform -chdir=$tf_dir plan -input=false -no-color -lock-timeout=120s -out=$plan_file #&>/dev/null
 fi
 
 PLAN_TXT=$( terraform -chdir=$tf_dir show -no-color $plan_file )
