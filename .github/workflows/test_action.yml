@@ -1,6 +1,9 @@
 name: Test action
 
-on: [push]
+on:
+  pull_request:
+    branches:
+      - main
 
 jobs:
   test-action:
@@ -15,6 +18,7 @@ jobs:
         id: stats1
         with:
           terraform-directory: ${{ env.tf-dir }}
+          add-args: -target=docker_image.nginx -target=docker_container.nginx
       - name: BEFORE APPLY - Get outputs
         if: steps.stats1.outputs.change-count > 0
         run: |
