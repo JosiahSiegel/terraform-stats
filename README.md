@@ -11,7 +11,9 @@ Output the following statistics for the Terraform environment:
 3. Resource drifts
 4. Change count
    * "Change" refers to change actions that Terraform plans to use to move from the prior state to a new state.
-5. Resource changes
+5. Change percent
+   * Percentage of changes to total resources.
+6. Resource changes
 
 ## Usage
 
@@ -27,6 +29,7 @@ Output the following statistics for the Terraform environment:
     echo "drift-count: ${{ steps.stats.outputs.drift-count }}"
     echo "resource-drifts: ${{ steps.stats.outputs.resource-drifts }}"
     echo "change-count: ${{ steps.stats.outputs.change-count }}"
+    echo "change-percent: ${{ steps.stats.outputs.change-percent }}"
     echo "resource-changes: ${{ steps.stats.outputs.resource-changes }}"
 ```
 
@@ -36,7 +39,6 @@ Output the following statistics for the Terraform environment:
 
 * change-count: 2
 * change-percent: 100
-* resource-changes:
 * resource-changes:
 ```json
 [
