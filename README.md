@@ -37,7 +37,6 @@ Output the following statistics for the Terraform environment:
 * change-count: 2
 * change-percent: 100
 * resource-changes:
-* resource-changes:
 ```json
 [
   {
