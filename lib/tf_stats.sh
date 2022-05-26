@@ -7,7 +7,7 @@ tf_dir=$1
 #are values within it that won't be known until after apply.
 include_no_op=$2
 add_args=$3
-plan_file=tf__stats__plan.txt
+plan_file=$4
 
 terraform -chdir=$tf_dir plan $3 -input=false -no-color -lock-timeout=120s -out=$plan_file #&>/dev/null
 if [[ $? -ne 0 ]]; then

@@ -19,6 +19,9 @@ jobs:
         with:
           terraform-directory: ${{ env.tf-dir }}
           add-args: -target=docker_image.nginx -target=docker_container.nginx
+          upload-plan: true
+          upload-retention-days: 0
+          plan-file: tf_stats_plan.bin
       - name: BEFORE APPLY - Get outputs
         if: steps.stats1.outputs.change-count > 0
         run: |
