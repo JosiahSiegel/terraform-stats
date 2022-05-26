@@ -37,9 +37,23 @@ Output the following statistics for the Terraform environment:
 * change-count: 2
 * change-percent: 100
 * resource-changes:
-    ```json
-    [{"address":"docker_container.nginx","changes":["create"]},{"address":"docker_image.nginx","changes":["create"]}]
-    ```
+* resource-changes:
+```json
+[
+  {
+    "address": "docker_container.nginx",
+    "changes": [
+      "create"
+    ]
+  },
+  {
+    "address": "docker_image.nginx",
+    "changes": [
+      "create"
+    ]
+  }
+]
+```
 
 ## Inputs
 
