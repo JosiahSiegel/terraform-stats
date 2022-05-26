@@ -13,6 +13,23 @@ Output the following statistics for the Terraform environment:
    * "Change" refers to change actions that Terraform plans to use to move from the prior state to a new state.
 5. Resource changes
 
+## Usage
+
+```yml
+- name: Terraform stats
+  uses: josiahsiegel/terraform-stats@v1.1
+  id: stats
+  with:
+    terraform-directory: ${{ env.tf-dir }}
+- name: Get outputs
+  run: |
+    echo "terraform-version: ${{ steps.stats.outputs.terraform-version }}"
+    echo "drift-count: ${{ steps.stats.outputs.drift-count }}"
+    echo "resource-drifts: ${{ steps.stats.outputs.resource-drifts }}"
+    echo "change-count: ${{ steps.stats.outputs.change-count }}"
+    echo "resource-changes: ${{ steps.stats.outputs.resource-changes }}"
+```
+
 ## Inputs
 
 ```yml
@@ -22,13 +39,25 @@ inputs:
     required: true
     default: "./terraform"
   include-no-op:
-    description: "no-op" refers to the before and after Terraform changes are identical as a value will only be known after apply.
+    description: "\"no-op\" refers to the before and after Terraform changes are identical as a value will only be known after apply."
     required: true
     default: false
   add-args:
-    description: "Pass additional arguments to Terraform plan."
+    description: Pass additional arguments to Terraform plan.
     required: true
     default: ""
+  upload-plan:
+    description: Upload plan file. true or false
+    required: true
+    default: false
+  upload-retention-days:
+    description: Number of days to keep uploaded plan.
+    required: true
+    default: 7
+  plan-file:
+    description: Name of plan file.
+    required: true
+    default: tf__stats__plan.bin
 ```
 
 ## Outputs
