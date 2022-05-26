@@ -46,6 +46,9 @@ outputs:
   resource-changes:
     description: 'JSON output of resource changes'
     value: ${{ steps.local-action.outputs.resource-changes }}
+  change-percent:
+    description: 'Percentage of changes to total resources'
+    value: ${{ steps.local-action.outputs.change-percent }}
 
 runs:
   using: "composite"
@@ -59,6 +62,7 @@ runs:
         "${{ inputs.add-args }}" \
         "${{ inputs.plan-file }}"
       shell: bash
+
     - name: Upload Artifact
       if: inputs.upload-plan == 'true'
       uses: actions/upload-artifact@v3.1.0
@@ -66,3 +70,28 @@ runs:
         name: ${{ inputs.plan-file }}
         path: "${{ inputs.terraform-directory }}/${{ inputs.plan-file }}"
         retention-days: ${{ inputs.upload-retention-days }}
+
+    - name: Create summary
+      if: |
+        steps.local-action.outputs.change-count > 0 ||
+        steps.local-action.outputs.drift-count > 0
+      run: |
+        echo "### :construction: Terraform Stats :construction:" >> $GITHUB_STEP_SUMMARY
+        if [[ ${{ steps.local-action.outputs.change-count }} > 0 ]]; then
+        echo "
+        * change-count: ${{ steps.local-action.outputs.change-count }}
+        * change-percent: ${{ steps.local-action.outputs.change-percent }}
+        * resource-changes:
+            \`\`\`json
+            ${{ steps.local-action.outputs.resource-changes }}
+            \`\`\`" >> $GITHUB_STEP_SUMMARY
+        fi
+        if [[ ${{ steps.local-action.outputs.drift-count }} > 0 ]]; then
+        echo "
+        * drift-count: ${{ steps.local-action.outputs.drift-count }}
+        * resource-drift:
+            \`\`\`json
+            ${{ steps.local-action.outputs.resource-drifts }}
+            \`\`\`" >> $GITHUB_STEP_SUMMARY
+        fi
+      shell: bash

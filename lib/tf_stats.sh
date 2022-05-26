@@ -45,18 +45,28 @@ else
 fi
 CHANGE_COUNT=$(echo $CHANGES_FILTERED | jq length)
 
-#echo "$PLAN_TXT" | awk '/Terraform will perform the following actions:/{y=1;next}y' | grep '^[[:space:]]*[\+\-\~]' | sed -E 's/^([[:space:]]+)([-+])/\2\1/g'
-#echo $PLAN_JSON | jq . | grep 'http_response_time'
+# total resources and percent changed
+TOTAL_RESOURCES=$(echo $PLAN_JSON | jq -c .planned_values.root_module)
+TOTAL_ROOT=$(echo $TOTAL_RESOURCES | jq -c .resources | jq length)
+TOTAL_CHILD=$(echo $TOTAL_RESOURCES | jq -c .child_modules | jq -c '[.[].resources | length] | add') &>/dev/null
+if [[ $? -ne 0 ]]; then
+  TOTAL_CHILD=0
+fi
+TOTAL_COUNT=$(( $TOTAL_ROOT + $TOTAL_CHILD ))
+CHANGE_PERC=$(echo "scale=0 ; $CHANGE_COUNT / $TOTAL_COUNT * 100" | bc)
 
 echo "::set-output name=terraform-version::$(echo $VERSION)"
+echo "::set-output name=change-percent::$(echo $CHANGE_PERC)"
 echo "::set-output name=drift-count::$(echo $DRIFT_COUNT)"
 echo "::set-output name=change-count::$(echo $CHANGE_COUNT)"
 # Make output friendly
 DRIFTED_RESOURCES="${DRIFTED_RESOURCES//'%'/'%25'}"
 DRIFTED_RESOURCES="${DRIFTED_RESOURCES//$'\n'/'%0A'}"
 DRIFTED_RESOURCES="${DRIFTED_RESOURCES//$'\r'/'%0D'}"
+DRIFTED_RESOURCES="${DRIFTED_RESOURCES//'"'/'\"'}"
 echo "::set-output name=resource-drifts::$(echo $DRIFTED_RESOURCES)"
 CHANGES_FILTERED="${CHANGES_FILTERED//'%'/'%25'}"
 CHANGES_FILTERED="${CHANGES_FILTERED//$'\n'/'%0A'}"
 CHANGES_FILTERED="${CHANGES_FILTERED//$'\r'/'%0D'}"
+CHANGES_FILTERED="${CHANGES_FILTERED//'"'/'\"'}"
 echo "::set-output name=resource-changes::$(echo $CHANGES_FILTERED)"

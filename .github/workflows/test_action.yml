@@ -29,6 +29,7 @@ jobs:
           echo "drift-count: ${{ steps.stats1.outputs.drift-count }}"
           echo "resource-drifts: ${{ steps.stats1.outputs.resource-drifts }}"
           echo "change-count: ${{ steps.stats1.outputs.change-count }}"
+          echo "change-percent: ${{ steps.stats1.outputs.change-percent }}"
           echo "resource-changes: ${{ steps.stats1.outputs.resource-changes }}"
       - name: Terraform apply
         run: terraform -chdir=${{ env.tf-dir }} apply -auto-approve
@@ -43,4 +44,5 @@ jobs:
           echo "drift-count: ${{ steps.stats2.outputs.drift-count }}"
           echo "resource-drifts: ${{ steps.stats2.outputs.resource-drifts }}"
           echo "change-count: ${{ steps.stats2.outputs.change-count }}"
+          echo "change-percent: ${{ steps.stats2.outputs.change-percent }}"
           echo "resource-changes: ${{ steps.stats2.outputs.resource-changes }}"

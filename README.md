@@ -30,6 +30,17 @@ Output the following statistics for the Terraform environment:
     echo "resource-changes: ${{ steps.stats.outputs.resource-changes }}"
 ```
 
+## Workflow summary
+
+### :construction: Terraform Stats :construction:
+
+* change-count: 2
+* change-percent: 100
+* resource-changes:
+    ```json
+    [{"address":"docker_container.nginx","changes":["create"]},{"address":"docker_image.nginx","changes":["create"]}]
+    ```
+
 ## Inputs
 
 ```yml
@@ -71,6 +82,8 @@ outputs:
     description: 'JSON output of resource drifts'
   change-count:
     description: 'Count of changes'
+  change-percent:
+    description: 'Percentage of changes to total resources'
   resource-changes:
     description: 'JSON output of resource changes'
 ```
