@@ -21,6 +21,7 @@ Output the following statistics for the Terraform environment:
   id: stats
   with:
     terraform-directory: ${{ env.tf-dir }}
+    terraform-version: 1.1.9
 - name: Get outputs
   run: |
     echo "terraform-version: ${{ steps.stats.outputs.terraform-version }}"
@@ -83,6 +84,10 @@ inputs:
     description: Name of plan file.
     required: true
     default: tf__stats__plan.bin
+  terraform-version:
+    description: Specify a specific version of Terraform
+    required: true
+    default: latest
 ```
 
 ## Outputs

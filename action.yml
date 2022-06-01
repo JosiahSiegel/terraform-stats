@@ -29,6 +29,10 @@ inputs:
     description: Name of plan file.
     required: true
     default: tf__stats__plan.bin
+  terraform-version:
+    description: Specify a specific version of Terraform
+    required: true
+    default: latest
   
 outputs:
   terraform-version:
@@ -53,6 +57,11 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - name: Use specific version of Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: ${{ inputs.terraform-version }}
+        terraform_wrapper: false
     - name: Run Terraform stats
       id: local-action
       run: |
