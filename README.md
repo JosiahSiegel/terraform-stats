@@ -19,7 +19,7 @@ Output the following statistics for the Terraform environment:
 
 ```yml
 - name: Terraform stats
-  uses: josiahsiegel/terraform-stats@v1.1
+  uses: josiahsiegel/terraform-stats@<latest-version>
   id: stats
   with:
     terraform-directory: ${{ env.tf-dir }}
