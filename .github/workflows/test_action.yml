@@ -22,6 +22,7 @@ jobs:
           upload-plan: true
           upload-retention-days: 0
           plan-file: tf_stats_plan.bin
+          terraform-version: 1.1.9
       - name: BEFORE APPLY - Get outputs
         if: steps.stats1.outputs.change-count > 0
         run: |
