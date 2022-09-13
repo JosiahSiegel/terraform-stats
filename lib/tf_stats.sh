@@ -15,7 +15,10 @@ if [[ $? -ne 0 ]]; then
   if [[ $? -ne 0 ]]; then
     exit 1
   fi
-  terraform -chdir=$tf_dir plan $3 -input=false -no-color -lock-timeout=120s -out=$plan_file &>/dev/null
+  terraform -chdir=$tf_dir plan $3 -input=false -no-color -lock-timeout=120s -out=$plan_file >/dev/null
+  if [[ $? -ne 0 ]]; then
+    exit 1
+  fi
 fi
 
 PLAN_TXT=$( terraform -chdir=$tf_dir show -no-color $plan_file )
@@ -48,11 +51,8 @@ CHANGE_COUNT=$(echo $CHANGES_FILTERED | jq length)
 # total resources and percent changed
 TOTAL_RESOURCES=$(echo $PLAN_JSON | jq -c .planned_values.root_module)
 TOTAL_ROOT=$(echo $TOTAL_RESOURCES | jq -c .resources | jq length)
-TOTAL_CHILD=$(echo $TOTAL_RESOURCES | jq -c .child_modules | jq -c '[.[].resources | length] | add') &>/dev/null
-if [[ $? -ne 0 ]]; then
-  TOTAL_CHILD=0
-fi
-TOTAL_COUNT=$(( $TOTAL_ROOT + $TOTAL_CHILD ))
+TOTAL_CHILD=$(echo $TOTAL_RESOURCES | jq -c .child_modules | jq -c '[.[]?.resources | length] | add')
+TOTAL_COUNT=$(( TOTAL_ROOT + TOTAL_CHILD ))
 CHANGE_PERC=$(echo "scale=0 ; $CHANGE_COUNT / $TOTAL_COUNT * 100" | bc)
 
 echo "::set-output name=terraform-version::$(echo $VERSION)"
