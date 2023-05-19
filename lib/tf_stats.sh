@@ -55,18 +55,18 @@ TOTAL_CHILD=$(echo $TOTAL_RESOURCES | jq -c .child_modules | jq -c '[.[]?.resour
 TOTAL_COUNT=$(( TOTAL_ROOT + TOTAL_CHILD ))
 CHANGE_PERC=$(echo "scale=0 ; $CHANGE_COUNT / $TOTAL_COUNT * 100" | bc)
 
-echo "::set-output name=terraform-version::$(echo $VERSION)"
-echo "::set-output name=change-percent::$(echo $CHANGE_PERC)"
-echo "::set-output name=drift-count::$(echo $DRIFT_COUNT)"
-echo "::set-output name=change-count::$(echo $CHANGE_COUNT)"
+echo "terraform-version=$VERSION" >> $GITHUB_OUTPUT
+echo "change-percent=$CHANGE_PERC" >> $GITHUB_OUTPUT
+echo "drift-count=$DRIFT_COUNT" >> $GITHUB_OUTPUT
+echo "change-count=$CHANGE_COUNT" >> $GITHUB_OUTPUT
 # Make output friendly
 DRIFTED_RESOURCES="${DRIFTED_RESOURCES//'%'/'%25'}"
 DRIFTED_RESOURCES="${DRIFTED_RESOURCES//$'\n'/'%0A'}"
 DRIFTED_RESOURCES="${DRIFTED_RESOURCES//$'\r'/'%0D'}"
 DRIFTED_RESOURCES="${DRIFTED_RESOURCES//'"'/'\"'}"
-echo "::set-output name=resource-drifts::$(echo $DRIFTED_RESOURCES)"
+echo "resource-drifts=$DRIFTED_RESOURCES" >> $GITHUB_OUTPUT
 CHANGES_FILTERED="${CHANGES_FILTERED//'%'/'%25'}"
 CHANGES_FILTERED="${CHANGES_FILTERED//$'\n'/'%0A'}"
 CHANGES_FILTERED="${CHANGES_FILTERED//$'\r'/'%0D'}"
 CHANGES_FILTERED="${CHANGES_FILTERED//'"'/'\"'}"
-echo "::set-output name=resource-changes::$(echo $CHANGES_FILTERED)"
+echo "resource-changes=$CHANGES_FILTERED" >> $GITHUB_OUTPUT
