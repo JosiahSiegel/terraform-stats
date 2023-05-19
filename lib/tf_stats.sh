@@ -1,7 +1,6 @@
 #!/bin/bash
 
 tf_dir=$1
-
 #For ["no-op"], the before and
 #after values are identical. The "after" value will be incomplete if there
 #are values within it that won't be known until after apply.
@@ -9,64 +8,71 @@ include_no_op=$2
 add_args=$3
 plan_file=$4
 
-terraform -chdir=$tf_dir plan $3 -input=false -no-color -lock-timeout=120s -out=$plan_file &>/dev/null
-if [[ $? -ne 0 ]]; then
-  terraform -chdir=$tf_dir init >/dev/null
-  if [[ $? -ne 0 ]]; then
-    exit 1
-  fi
-  terraform -chdir=$tf_dir plan $3 -input=false -no-color -lock-timeout=120s -out=$plan_file >/dev/null
-  if [[ $? -ne 0 ]]; then
-    exit 1
-  fi
+# Define a function to run terraform plan with common arguments
+tf_plan() {
+  terraform -chdir=$tf_dir plan $add_args -input=false -no-color -lock-timeout=120s -out=$plan_file "$@"
+}
+
+# Try to run terraform plan and init if needed
+if ! tf_plan &>/dev/null; then
+  terraform -chdir=$tf_dir init >/dev/null || exit 1
+  tf_plan >/dev/null || exit 1
 fi
 
+# Get the plan output in text and json formats
 PLAN_TXT=$( terraform -chdir=$tf_dir show -no-color $plan_file )
 PLAN_JSON=$( terraform -chdir=$tf_dir show -no-color -json $plan_file )
 
-VERSION=$(echo $PLAN_JSON | jq .terraform_version)
+# Define a function to parse the plan json with jq
+parse_plan_json() {
+  echo $PLAN_JSON | jq "$@"
+}
 
-# "drift" is changes made outside of terraform
-# "resource_drift":
-DRIFT=$(echo $PLAN_JSON | jq .resource_drift)
+# Define a function to make output friendly
+make_output_friendly() {
+  local output=$1
+  output="${output//'%'/'%25'}"
+  output="${output//$'\n'/'%0A'}"
+  output="${output//$'\r'/'%0D'}"
+  output="${output//'"'/'\"'}"
+  echo $output
+}
+
+# Define a function to write the output to the github output file
+write_output() {
+  local key=$1
+  local value=$2
+  echo "$key=$(make_output_friendly $value)" >> $GITHUB_OUTPUT
+}
+
+# Get the terraform version from the plan json
+VERSION=$(parse_plan_json .terraform_version)
+
+# Get the resource drift from the plan json
+DRIFT=$(parse_plan_json .resource_drift)
 DRIFT_COUNT=$(echo $DRIFT | jq length)
-if [[ $DRIFT_COUNT -gt 0 ]]; then
-  DRIFTED_RESOURCES=$(echo $DRIFT | jq -c '[.[] | {address: .address, changes: .change.actions}]')
-else
-  DRIFTED_RESOURCES="[]"
-fi
+DRIFTED_RESOURCES=$(echo $DRIFT | jq -c '[.[] | {address: .address, changes: .change.actions}]')
 
-# "changes" is a description of the individual change actions that Terraform
-# plans to use to move from the prior state to a new state matching the
-# configuration.
-# "resource_changes":
-CHANGES=$(echo $PLAN_JSON | jq .resource_changes)
+# Get the resource changes from the plan json
+CHANGES=$(parse_plan_json .resource_changes)
 if [[ $include_no_op = true ]]; then
-  CHANGES_FILTERED=$(echo $CHANGES | jq -c '[.[] | {address: .address, changes: .change.actions}]')
+  CHANGES_FILTERED=$CHANGES
 else
   CHANGES_FILTERED=$(echo $CHANGES | jq -c '[.[] | {address: .address, changes: .change.actions} | select( .changes[] != "no-op")]')
 fi
 CHANGE_COUNT=$(echo $CHANGES_FILTERED | jq length)
 
-# total resources and percent changed
-TOTAL_RESOURCES=$(echo $PLAN_JSON | jq -c .planned_values.root_module)
+# Get the total resources and percent changed from the plan json
+TOTAL_RESOURCES=$(parse_plan_json .planned_values.root_module)
 TOTAL_ROOT=$(echo $TOTAL_RESOURCES | jq -c .resources | jq length)
 TOTAL_CHILD=$(echo $TOTAL_RESOURCES | jq -c .child_modules | jq -c '[.[]?.resources | length] | add')
 TOTAL_COUNT=$(( TOTAL_ROOT + TOTAL_CHILD ))
 CHANGE_PERC=$(echo "scale=0 ; $CHANGE_COUNT / $TOTAL_COUNT * 100" | bc)
 
-echo "terraform-version=$VERSION" >> $GITHUB_OUTPUT
-echo "change-percent=$CHANGE_PERC" >> $GITHUB_OUTPUT
-echo "drift-count=$DRIFT_COUNT" >> $GITHUB_OUTPUT
-echo "change-count=$CHANGE_COUNT" >> $GITHUB_OUTPUT
-# Make output friendly
-DRIFTED_RESOURCES="${DRIFTED_RESOURCES//'%'/'%25'}"
-DRIFTED_RESOURCES="${DRIFTED_RESOURCES//$'\n'/'%0A'}"
-DRIFTED_RESOURCES="${DRIFTED_RESOURCES//$'\r'/'%0D'}"
-DRIFTED_RESOURCES="${DRIFTED_RESOURCES//'"'/'\"'}"
-echo "resource-drifts=$DRIFTED_RESOURCES" >> $GITHUB_OUTPUT
-CHANGES_FILTERED="${CHANGES_FILTERED//'%'/'%25'}"
-CHANGES_FILTERED="${CHANGES_FILTERED//$'\n'/'%0A'}"
-CHANGES_FILTERED="${CHANGES_FILTERED//$'\r'/'%0D'}"
-CHANGES_FILTERED="${CHANGES_FILTERED//'"'/'\"'}"
-echo "resource-changes=$CHANGES_FILTERED" >> $GITHUB_OUTPUT
+# Write the output to the github output file
+write_output "terraform-version" "$VERSION"
+write_output "change-percent" "$CHANGE_PERC"
+write_output "drift-count" "$DRIFT_COUNT"
+write_output "change-count" "$CHANGE_COUNT"
+write_output "resource-drifts" "$DRIFTED_RESOURCES"
+write_output "resource-changes" "$CHANGES_FILTERED"
