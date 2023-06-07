@@ -35,6 +35,7 @@ make_output_friendly() {
   output="${output//$'\n'/'%0A'}"
   output="${output//$'\r'/'%0D'}"
   output="${output//'"'/'\"'}"
+  output="${output//'\\"'/'\\\"'}"
   echo $output
 }
 
