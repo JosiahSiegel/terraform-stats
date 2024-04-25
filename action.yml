@@ -58,7 +58,7 @@ runs:
   using: "composite"
   steps:
     - name: Use specific version of Terraform
-      uses: hashicorp/setup-terraform@v2
+      uses: hashicorp/setup-terraform@v3
       with:
         terraform_version: ${{ inputs.terraform-version }}
         terraform_wrapper: false
