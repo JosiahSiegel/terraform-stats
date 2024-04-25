@@ -12,7 +12,7 @@ jobs:
       tf-dir: "./terraform"
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: BEFORE APPLY - Use local action
         uses: ./
         id: stats1
