@@ -74,7 +74,7 @@ runs:
 
     - name: Upload Artifact
       if: inputs.upload-plan == 'true'
-      uses: actions/upload-artifact@v4.3.3
+      uses: actions/upload-artifact@v4.3.5
       with:
         name: ${{ inputs.plan-file }}
         path: "${{ inputs.terraform-directory }}/${{ inputs.plan-file }}"
